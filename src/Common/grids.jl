@@ -31,7 +31,7 @@ struct RCWAGrid
     py::ftype
     Kx::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
     Ky::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
-    k0::Array{ftype,1}
+    k0::Array{Complex{ftype},1}
     V0::AbstractArray{Complex{ftype},2}
     Kz0::Diagonal{Complex{ftype},Array{Complex{ftype},1}}
 end
@@ -72,7 +72,7 @@ Computes the wave vectors of the plane wave expansion
 * `Ky` : Wave vector in y
 * `k0` : Free-space 0th-order wavevector
 """
-function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
+function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Number,α::Number,λ::Real,sup)
     #all k vectors are generally normalized to k0 here
     #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
     k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(get_permittivity(sup,λ)))
@@ -124,7 +124,7 @@ Create a reciprocal space grid for RCWA simulation
 # Outputs
 * `grd`: RCWA grid struct
 """
-function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Real,α::Real,λ::Real,sup)
+function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Number,α::Number,λ::Real,sup)
     nx,ny,dnx,dny=ngrid(Nx,Ny)
     Kx,Ky,k0=kgrid(nx,ny,px,py,θ,α,λ,sup)
     V0,Kz0=modes_freespace(Kx,Ky)
