@@ -84,6 +84,22 @@ function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,θ::Numbe
     Ky=Diagonal(ky)
     return Complex.(Kx),Complex.(Ky),k0
 end
+
+function kgrid(nx::Array{Int64,1},ny::Array{Int64,1},px::Real,py::Real,kx::Number,ky::Number,kz::Number,λ::Real,sup)
+    #all k vectors are generally normalized to k0 here
+    #The incoming wave, transformed from spherical coordinates to normalized cartesian coordinates, |k0|=1
+    #k0=[sin(θ*π/180)*cos(α*π/180),sin(θ*π/180)*sin(α*π/180),cos(θ*π/180)]*real(sqrt(get_permittivity(sup,λ)))
+    k00 = 2 * pi / λ
+    k0=[kx/k00,ky/k00,kz/k00]*real(sqrt(get_permittivity(sup,λ)))
+    #the spatial vectors are the sum of the incoming vector and the reciprocal lattice vectors
+    kx=k0[1].+real(λ)*nx/px;
+    ky=k0[2].+real(λ)*ny/py;
+    #need matrix for later computations
+    Kx=Diagonal(kx)
+    Ky=Diagonal(ky)
+    return Complex.(Kx),Complex.(Ky),k0
+end
+
 """
     modes_freespace(Kx,Ky)
 Computes the eigenmodes of propagation through free space, for normalization
@@ -130,6 +146,14 @@ function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,θ::Number,α::Number,λ
     V0,Kz0=modes_freespace(Kx,Ky)
 	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
 end
+
+function rcwagrid(Nx::Int64,Ny::Int64,px::Real,py::Real,kx::Number,ky::Number,kz::Number,λ::Real,sup)
+    nx,ny,dnx,dny=ngrid(Nx,Ny)
+    Kx,Ky,k0=kgrid(nx,ny,px,py,kx,ky,kz,λ,sup)
+    V0,Kz0=modes_freespace(Kx,Ky)
+	return RCWAGrid(Nx,Ny,nx,ny,dnx,dny,px,py,Kx,Ky,k0,V0,Kz0)
+end
+
 """
 	rcwasource(grd)
 Create a reciprocal space grid for RCWA simulation
